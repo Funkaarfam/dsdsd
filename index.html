@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Co3er Development — Discord bots, web applications, and custom developer tools." />
+  <meta name="theme-color" content="#09090b" />
+  <title>Co3er Development</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,700;1,9..144,200;1,9..144,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Favicon SVG -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%2314dca0%22/><path d=%22M9 16a7 7 0 0 1 7-7%22 stroke=%22%23000%22 stroke-width=%222%22 stroke-linecap=%22round%22 fill=%22none%22/><circle cx=%2216%22 cy=%2219%22 r=%223%22 fill=%22%23000%22/></svg>" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ░░░ OVERLAY SYSTEM ░░░ -->
+  <!-- Animated noise grain — rendered by JS -->
+  <canvas id="c-noise"    class="overlay-canvas overlay-noise"    aria-hidden="true"></canvas>
+  <!-- Scanline overlay — pure CSS -->
+  <div               class="overlay-scanlines"                     aria-hidden="true"></div>
+  <!-- Chromatic aberration vignette -->
+  <div               class="overlay-vignette"                      aria-hidden="true"></div>
+
+  <!-- ░░░ CURSOR ░░░ -->
+  <div id="cur-dot"  class="cur-dot"  aria-hidden="true"></div>
+  <div id="cur-trail" class="cur-trail" aria-hidden="true">
+    <!-- 8 trail dots injected by JS -->
+  </div>
+
+  <!-- ░░░ LOADER ░░░ -->
+  <div id="loader" class="loader" role="status" aria-label="Loading">
+    <div class="ldr-bg"></div>
+    <div class="ldr-center">
+      <svg class="ldr-glyph" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+        <circle class="ldr-ring ldr-ring-1" cx="40" cy="40" r="36" stroke="#14dca0" stroke-width="1" stroke-dasharray="226" stroke-dashoffset="226"/>
+        <circle class="ldr-ring ldr-ring-2" cx="40" cy="40" r="26" stroke="#14dca0" stroke-width="0.5" opacity="0.4" stroke-dasharray="163" stroke-dashoffset="163"/>
+        <path class="ldr-mark" d="M28 40a12 12 0 0 1 12-12" stroke="#14dca0" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="40" cy="52" r="4" fill="#14dca0" class="ldr-dot"/>
+      </svg>
+      <div class="ldr-wordmark">Co3er<span>.dev</span></div>
+      <div class="ldr-status" id="ldr-status">booting</div>
+      <div class="ldr-bar-wrap"><div class="ldr-bar" id="ldr-bar"></div></div>
+    </div>
+    <!-- Corner brackets -->
+    <div class="ldr-corner ldr-tl" aria-hidden="true"></div>
+    <div class="ldr-corner ldr-tr" aria-hidden="true"></div>
+    <div class="ldr-corner ldr-bl" aria-hidden="true"></div>
+    <div class="ldr-corner ldr-br" aria-hidden="true"></div>
+  </div>
+
+  <!-- ░░░ NAVBAR ░░░ -->
+  <nav id="navbar" class="navbar" role="navigation" aria-label="Primary navigation">
+    <div class="nav-shell">
+
+      <!-- Logo -->
+      <a href="#home" class="nav-logo" aria-label="Co3er Development home">
+        <svg class="nav-logo-svg" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+          <rect x="1" y="1" width="34" height="34" rx="9" stroke="#14dca0" stroke-width="1.2"/>
+          <path d="M11 18a7 7 0 0 1 7-7" stroke="#14dca0" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="18" cy="22" r="3" fill="#14dca0"/>
+        </svg>
+        <span class="nav-logo-name">Co3er<em>.dev</em></span>
+      </a>
+
+      <!-- Center links -->
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="#about"    class="nav-a" data-idx="01">About</a></li>
+        <li><a href="#services" class="nav-a" data-idx="02">Services</a></li>
+        <li><a href="#projects" class="nav-a" data-idx="03">Projects</a></li>
+        <li><a href="#pricing"  class="nav-a" data-idx="04">Pricing</a></li>
+      </ul>
+
+      <!-- Right side -->
+      <div class="nav-end">
+        <!-- Clock -->
+        <div class="nav-clock" id="nav-clock" aria-live="polite" aria-label="Current time">
+          <span id="clk-time">--:--:--</span>
+        </div>
+
+        <!-- Theme toggle -->
+        <button class="nav-theme" id="theme-btn" aria-label="Toggle colour theme">
+          <svg class="ico-sun" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.4"/><path d="M10 2v1.5M10 16.5V18M2 10h1.5M16.5 10H18M4.4 4.4l1.1 1.1M14.5 14.5l1.1 1.1M4.4 15.6l1.1-1.1M14.5 5.5l1.1-1.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <svg class="ico-moon" viewBox="0 0 20 20" fill="none"><path d="M16.5 11.5A6.5 6.5 0 0 1 8.5 3.5 6.5 6.5 0 1 0 16.5 11.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </button>
+
+        <!-- CTA -->
+        <a href="#contact" class="nav-cta">
+          <span>Let's talk</span>
+          <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <!-- Hamburger -->
+      <button class="nav-ham" id="nav-ham" aria-label="Toggle menu" aria-expanded="false">
+        <span class="ham-l"></span>
+        <span class="ham-l"></span>
+      </button>
+
+    </div>
+    <!-- Mobile drawer -->
+    <div class="nav-drawer" id="nav-drawer" aria-hidden="true">
+      <a href="#about"    class="drawer-a">About</a>
+      <a href="#services" class="drawer-a">Services</a>
+      <a href="#projects" class="drawer-a">Projects</a>
+      <a href="#pricing"  class="drawer-a">Pricing</a>
+      <a href="#contact"  class="drawer-a drawer-cta">Let's talk →</a>
+    </div>
+  </nav>
+
+  <!-- ░░░ HERO ░░░ -->
+  <section id="home" class="hero" aria-labelledby="hero-h1">
+
+    <!-- WebGL / Canvas background -->
+    <canvas id="c-hero" class="hero-canvas" aria-hidden="true"></canvas>
+
+    <!-- Coordinate HUD overlay -->
+    <div class="hero-hud hero-hud-tl" aria-hidden="true">
+      <span class="hud-label">LAT</span><span class="hud-val" id="hud-lat">33.6844°N</span>
+      <span class="hud-sep">|</span>
+      <span class="hud-label">LNG</span><span class="hud-val" id="hud-lng">073.0479°E</span>
+    </div>
+    <div class="hero-hud hero-hud-tr" aria-hidden="true">
+      <span class="hud-val" id="hud-ver">v3.0.0</span>
+      <span class="hud-sep">·</span>
+      <span class="hud-label">STATUS</span>
+      <span class="hud-val hud-green">ONLINE</span>
+    </div>
+    <div class="hero-hud hero-hud-br" aria-hidden="true">
+      <span class="hud-label">NODE</span><span class="hud-val">co3er-prod-01</span>
+    </div>
+
+    <!-- Main content -->
+    <div class="hero-inner">
+      <div class="hero-tag" data-r>
+        <span class="tag-pulse"></span>
+        <span id="hero-tag-text">// accepting commissions</span>
+      </div>
+
+      <h1 id="hero-h1" class="hero-h1" data-r data-rd="1">
+        <span class="h1-row">Building digital</span>
+        <span class="h1-row h1-em">tools that<em> work.</em></span>
+      </h1>
+
+      <p class="hero-sub" data-r data-rd="2">
+        Discord bots&ensp;·&ensp;Web apps&ensp;·&ensp;Custom automation
+      </p>
+
+      <div class="hero-btns" data-r data-rd="3">
+        <a href="#projects" class="btn btn-p">
+          View Projects
+          <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#contact" class="btn btn-g">Start a Project</a>
+      </div>
+
+      <!-- Stat counters -->
+      <div class="hero-stats" data-r data-rd="4">
+        <div class="hs">
+          <span class="hs-n" data-count="10" data-sfx="+">0+</span>
+          <span class="hs-l">Projects shipped</span>
+        </div>
+        <div class="hs-div" aria-hidden="true"></div>
+        <div class="hs">
+          <span class="hs-n" data-count="100" data-sfx="%">0%</span>
+          <span class="hs-l">Custom code</span>
+        </div>
+        <div class="hs-div" aria-hidden="true"></div>
+        <div class="hs">
+          <span class="hs-n">24/7</span>
+          <span class="hs-l">Uptime SLA</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <a href="#about" class="hero-scroll" aria-label="Scroll to About">
+      <div class="scroll-mouse">
+        <div class="scroll-wheel"></div>
+      </div>
+      <span>scroll</span>
+    </a>
+
+  </section>
+
+  <!-- ░░░ ABOUT ░░░ -->
+  <section id="about" class="section" aria-labelledby="about-h2">
+    <div class="ctr">
+
+      <div class="sec-eye" data-r>
+        <span class="eye-num">01</span><span class="eye-sl" aria-hidden="true">/</span><span class="eye-txt">About</span>
+      </div>
+
+      <!-- Diagonal split layout -->
+      <div class="about-wrap">
+        <div class="about-l" data-r>
+          <h2 id="about-h2" class="sec-title">Who's<br><em>building?</em></h2>
+          <!-- Animated terminal block -->
+          <div class="terminal" aria-label="Terminal window showing skills">
+            <div class="term-bar">
+              <span class="term-dot term-r"></span>
+              <span class="term-dot term-y"></span>
+              <span class="term-dot term-g"></span>
+              <span class="term-title">co3er@dev:~</span>
+            </div>
+            <div class="term-body" id="term-body" aria-live="polite">
+              <!-- Lines injected by JS typewriter -->
+            </div>
+          </div>
+        </div>
+
+        <div class="about-r" data-r>
+          <p class="about-lead">I'm the dev behind Co3er Development — obsessed with writing clean, fast code that actually works.</p>
+          <p class="about-body">From moderation bots with thousands of daily users to pixel-perfect web apps, I build things that scale and feel good to use. Every project is custom — no templates, no shortcuts.</p>
+
+          <!-- Skill bars -->
+          <div class="skill-bars" aria-label="Skill proficiency levels">
+            <div class="sb-item" data-r>
+              <div class="sb-head"><span>Node.js / Express</span><span class="sb-pct">95%</span></div>
+              <div class="sb-track"><div class="sb-fill" data-pct="95"></div></div>
+            </div>
+            <div class="sb-item" data-r>
+              <div class="sb-head"><span>Discord.js v14</span><span class="sb-pct">98%</span></div>
+              <div class="sb-track"><div class="sb-fill" data-pct="98"></div></div>
+            </div>
+            <div class="sb-item" data-r>
+              <div class="sb-head"><span>React / Frontend</span><span class="sb-pct">88%</span></div>
+              <div class="sb-track"><div class="sb-fill" data-pct="88"></div></div>
+            </div>
+            <div class="sb-item" data-r>
+              <div class="sb-head"><span>MongoDB / Databases</span><span class="sb-pct">85%</span></div>
+              <div class="sb-track"><div class="sb-fill" data-pct="85"></div></div>
+            </div>
+          </div>
+
+          <!-- Tech chips -->
+          <div class="chips">
+            <span class="chip">Node.js</span><span class="chip">Discord.js</span>
+            <span class="chip">Express</span><span class="chip">React</span>
+            <span class="chip">MongoDB</span><span class="chip">REST APIs</span>
+            <span class="chip">WebSockets</span><span class="chip">Docker</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skill cards row -->
+      <div class="skill-cards">
+        <div class="skc" data-r>
+          <div class="skc-ico">
+            <svg viewBox="0 0 32 32" fill="none"><rect x="4" y="10" width="24" height="18" rx="4" stroke="currentColor" stroke-width="1.4"/><path d="M12 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="12" cy="19" r="2" fill="currentColor"/><circle cx="20" cy="19" r="2" fill="currentColor"/><path d="M4 20H2M30 20h-2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <h3>Discord Bots</h3>
+          <p>Music, economy, moderation, AI — built with Discord.js v14 and slash commands</p>
+        </div>
+        <div class="skc" data-r>
+          <div class="skc-ico">
+            <svg viewBox="0 0 32 32" fill="none"><rect x="2" y="6" width="28" height="20" rx="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 11h28" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="8.5" r="1" fill="currentColor"/><circle cx="11" cy="8.5" r="1" fill="currentColor"/><path d="M10 18l3 3-3 3M18 24h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Web Dev</h3>
+          <p>React, vanilla JS, responsive and performant across every device and browser</p>
+        </div>
+        <div class="skc" data-r>
+          <div class="skc-ico">
+            <svg viewBox="0 0 32 32" fill="none"><path d="M6 16h4l3-8 4 16 3-10 2 2h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>APIs</h3>
+          <p>RESTful backends, real-time WebSockets, and third-party integrations at scale</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ░░░ SERVICES ░░░ -->
+  <section id="services" class="section s-alt" aria-labelledby="services-h2">
+    <div class="ctr">
+      <div class="sec-eye" data-r>
+        <span class="eye-num">02</span><span class="eye-sl">/</span><span class="eye-txt">Services</span>
+      </div>
+      <h2 id="services-h2" class="sec-title" data-r>What I<br><em>build</em></h2>
+      <!-- Cards injected by JS -->
+      <div class="svc-grid" id="svc-grid" role="list"></div>
+    </div>
+  </section>
+
+  <!-- ░░░ PROJECTS ░░░ -->
+  <section id="projects" class="section" aria-labelledby="projects-h2">
+    <div class="ctr">
+      <div class="sec-eye" data-r>
+        <span class="eye-num">03</span><span class="eye-sl">/</span><span class="eye-txt">Projects</span>
+      </div>
+      <h2 id="projects-h2" class="sec-title" data-r>Featured<br><em>work</em></h2>
+      <div class="proj-grid" id="proj-grid" role="list">
+        <div class="proj-loading">
+          <div class="ld-dots"><span></span><span></span><span></span></div>
+          <span>Fetching projects…</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░░ PRICING ░░░ -->
+  <section id="pricing" class="section s-alt" aria-labelledby="pricing-h2">
+    <div class="ctr">
+      <div class="sec-eye" data-r>
+        <span class="eye-num">04</span><span class="eye-sl">/</span><span class="eye-txt">Pricing</span>
+      </div>
+      <div class="price-intro">
+        <h2 id="pricing-h2" class="sec-title" data-r>Simple,<br><em>honest pricing</em></h2>
+        <p class="price-note" data-r>Fixed price. Full ownership.<br>No subscriptions. No surprises.</p>
+      </div>
+
+      <!-- Toggle: monthly vs one-time (cosmetic) -->
+      <div class="price-toggle" data-r aria-label="Pricing type">
+        <button class="ptog active" data-ptog="one-time">One-time</button>
+        <button class="ptog"        data-ptog="monthly">Monthly</button>
+      </div>
+
+      <div class="price-grid" role="list">
+
+        <article class="pc" role="listitem" data-r>
+          <div class="pc-name">Basic Bot</div>
+          <div class="pc-price" data-ot="$49" data-mo="$19/mo">$49</div>
+          <ul class="pc-list">
+            <li>Simple command system</li>
+            <li>Basic moderation</li>
+            <li>Setup &amp; deployment</li>
+            <li>1 week support</li>
+          </ul>
+          <a href="#contact" class="btn btn-g btn-block">Get Started</a>
+        </article>
+
+        <article class="pc pc-feat" role="listitem" data-r>
+          <div class="pc-badge">Most Popular</div>
+          <div class="pc-name">Advanced Bot</div>
+          <div class="pc-price" data-ot="$149" data-mo="$49/mo">$149</div>
+          <ul class="pc-list">
+            <li>Full customization</li>
+            <li>Music player + queue</li>
+            <li>Economy &amp; database</li>
+            <li>24/7 hosting included</li>
+            <li>1 month support</li>
+          </ul>
+          <a href="#contact" class="btn btn-p btn-block">Get Started</a>
+        </article>
+
+        <article class="pc" role="listitem" data-r>
+          <div class="pc-name">Website Package</div>
+          <div class="pc-price" data-ot="$299" data-mo="$89/mo">$299</div>
+          <ul class="pc-list">
+            <li>Custom design</li>
+            <li>Fully responsive</li>
+            <li>Backend + database</li>
+            <li>SEO optimized</li>
+            <li>1 month support</li>
+          </ul>
+          <a href="#contact" class="btn btn-g btn-block">Get Started</a>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░░ CONTACT ░░░ -->
+  <section id="contact" class="section" aria-labelledby="contact-h2">
+    <div class="ctr">
+      <div class="sec-eye" data-r>
+        <span class="eye-num">05</span><span class="eye-sl">/</span><span class="eye-txt">Contact</span>
+      </div>
+
+      <div class="contact-wrap">
+        <div class="contact-l" data-r>
+          <h2 id="contact-h2" class="sec-title">Let's build<br><em>together</em></h2>
+          <p class="contact-blurb">Got a project in mind? Drop me a message — I reply within 24 hours.</p>
+
+          <!-- Discord card -->
+          <a href="https://discord.gg/yourserver" target="_blank" rel="noopener noreferrer" class="discord-card">
+            <svg viewBox="0 0 24 24" fill="currentColor" class="dc-logo" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.031.056a19.9 19.9 0 0 0 5.993 3.03.077.077 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+            <div class="dc-info">
+              <span class="dc-name">@co3er</span>
+              <span class="dc-sub">Fastest response on Discord</span>
+            </div>
+            <svg class="dc-arrow" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+
+          <!-- Status -->
+          <div class="avail-row">
+            <span class="avail-dot"></span>
+            <span class="avail-txt">Available for new projects</span>
+          </div>
+
+          <!-- Response time display -->
+          <div class="resp-card">
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.3"/><path d="M10 6v4l3 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span>Average response: <strong>&lt; 6 hours</strong></span>
+          </div>
+        </div>
+
+        <div class="contact-r" data-r>
+          <form id="contact-form" class="cform" novalidate aria-label="Contact form">
+            <div class="cf">
+              <label for="fn" class="cf-l">Name</label>
+              <input type="text"  id="fn"  name="name"    placeholder="Your name"      required autocomplete="name" />
+              <div class="cf-e" role="alert"></div>
+            </div>
+            <div class="cf">
+              <label for="fe" class="cf-l">Email</label>
+              <input type="email" id="fe"  name="email"   placeholder="your@email.com" required autocomplete="email" />
+              <div class="cf-e" role="alert"></div>
+            </div>
+            <div class="cf">
+              <label for="fs" class="cf-l">Project type</label>
+              <select id="fs" name="subject">
+                <option value="">Select a service…</option>
+                <option value="discord-bot">Discord Bot</option>
+                <option value="web-app">Web Application</option>
+                <option value="api">API / Backend</option>
+                <option value="hosting">Bot Hosting</option>
+                <option value="other">Other</option>
+              </select>
+              <div class="cf-e" role="alert"></div>
+            </div>
+            <div class="cf">
+              <label for="fm" class="cf-l">Message</label>
+              <textarea id="fm" name="message" placeholder="Tell me about your project…" required rows="5"></textarea>
+              <div class="cf-e" role="alert"></div>
+              <div class="cf-count"><span id="msg-count">0</span> / 2000</div>
+            </div>
+            <button type="submit" class="btn btn-p btn-block" id="sub-btn">
+              <span class="sub-lbl">Send Message</span>
+              <span class="sub-spin" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2" stroke-dasharray="44" stroke-dashoffset="22" class="spin-circle"/></svg>
+              </span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░░ FOOTER ░░░ -->
+  <footer class="footer" role="contentinfo">
+    <div class="ctr">
+      <!-- Top row -->
+      <div class="ft-top">
+        <div class="ft-brand">
+          <a href="#home" class="ft-logo">Co3er<em>.dev</em></a>
+          <p class="ft-tagline">Clean code. Fast delivery.<br>Zero compromises.</p>
+        </div>
+        <nav class="ft-nav" aria-label="Footer navigation">
+          <div class="ft-col">
+            <span class="ft-col-head">Site</span>
+            <a href="#about">About</a>
+            <a href="#services">Services</a>
+            <a href="#projects">Projects</a>
+            <a href="#pricing">Pricing</a>
+          </div>
+          <div class="ft-col">
+            <span class="ft-col-head">Contact</span>
+            <a href="#contact">Message</a>
+            <a href="https://discord.gg/yourserver" target="_blank" rel="noopener noreferrer">Discord ↗</a>
+          </div>
+        </nav>
+      </div>
+      <!-- Bottom row -->
+      <div class="ft-bottom">
+        <span class="ft-copy">&copy; <span id="ft-year"></span> Co3er Development. All rights reserved.</span>
+        <span class="ft-build">Built with Node.js + vanilla JS</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ░░░ TOAST ░░░ -->
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ░░░ SCRIPTS ░░░ -->
+  <script src="components/icons.js"></script>
+  <script src="main.js"></script>
+
+</body>
+</html>

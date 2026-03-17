@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/api/projects", "dest": "/api/projects.js" },
+    { "src": "/api/contact",  "dest": "/api/contact.js"  },
+    { "src": "/(.*)",         "dest": "/$1"              }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin",  "value": "*"                },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff"        },
+        { "key": "X-Frame-Options",        "value": "DENY"           },
+        { "key": "Referrer-Policy",        "value": "same-origin"    }
+      ]
+    }
+  ]
+}

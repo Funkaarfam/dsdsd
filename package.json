@@ -1,0 +1,9 @@
+{
+  "name": "co3er-dev",
+  "version": "4.0.0",
+  "description": "Co3er Development portfolio — Vercel deployment",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}

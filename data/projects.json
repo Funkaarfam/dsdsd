@@ -1,0 +1,30 @@
+
+[
+  {
+    "id": 1,
+    "title": "Fahdii PortFolio",
+    "description": "My personal portfolio website showcasing my projects and skills.",
+    "icon": "🚀",
+    "bgColor": "#667eea",
+    "live": "https://ukfahdii.vercel.app/",
+    "github": "https://ukfahdii.vercel.app/"
+  },
+  {
+    "id": 2,
+    "title": "SaadAhmadMusic Website",
+    "description": "Singers Website built with Next.js, showcasing music, videos, and tour dates.",
+    "icon": "🚀",
+    "bgColor": "#764ba2",
+    "live": "https://saad-ahmad-music.vercel.app/",
+    "github": ""
+  },
+  {
+    "id": 3,
+    "title": "Talha PortFolio",
+    "description": "PortFolio for an editor and content creator, featuring a blog and project showcase.",
+    "icon": "📊",
+    "bgColor": "#f093fb",
+    "github": ""
+  }
+]
+
